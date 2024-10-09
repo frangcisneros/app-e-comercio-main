@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  ms_stock:
+    image: ms_stock:latest
+    ports:
+      - 5000:5000
+    environment:
+      - FLASK_CONTEXT=development
+      - DATABASE_URL=postgresql+psycopg2://inventario_user:inventario_password@db:5432/inventario_db
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: inventario_user
+      POSTGRES_PASSWORD: inventario_password
+      POSTGRES_DB: inventario_db
+    ports:
+      - "5433:5432" # Cambia el puerto externo a 5433 si así lo tienes configurado
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
