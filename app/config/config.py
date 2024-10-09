@@ -25,8 +25,28 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
 
 
+class TestConfig(Config):
+    TESTING = True
+    DEBUG = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_TEST_URL")
+
+
+class ProductionConfig(Config):
+    DEBUG = False
+    TESTING = False
+    SQLALCHEMY_RECORD_QUERIES = False
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_PROD_URL")
+
+    @classmethod
+    def init_app(cls, app):
+        Config.init_app(app)
+
+
 def factory(app):
     configuation = {
         "development": DevelopmentConfig,
+        "testing": TestConfig,
+        "production": ProductionConfig,
     }
     return configuation[app]

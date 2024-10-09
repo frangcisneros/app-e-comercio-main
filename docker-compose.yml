@@ -1,30 +1,6 @@
 version: '3.8'
 
 services:
-  ms_stock:
-    image: ms_stock:latest
-    ports:
-      - 5000:5000
-    environment:
-      - FLASK_CONTEXT=development
-      - DATABASE_URL=postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
-    networks:
-      - mired
-    depends_on:
-      - db
-
-  ms_compras:
-    image: ms_compras:latest
-    ports:
-      - 5001:5001
-    environment:
-      - FLASK_CONTEXT=development
-      - DATABASE_URL=postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
-    networks:
-      - mired
-    depends_on:
-      - db
-
   db:
     image: postgres:latest
     environment:
@@ -37,6 +13,20 @@ services:
       - mired
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # Montar el archivo de inicialización
+
+  ms_stock:
+    build:
+      context: ../ms-inventarios # Ruta hacia el microservicio
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+    networks:
+      - mired
 
 volumes:
   postgres_data:
