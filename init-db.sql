@@ -2,4 +2,4 @@
 
 CREATE DATABASE main_app_dev_db;
 CREATE DATABASE main_app_prod_db;
-CREATE DATABASE main_app_test_db;
+CREATE DATABASE main_app_db;
