@@ -26,50 +26,50 @@ services:
         {"connect_args": {"options": "-csearch_path=catalogo_schema"}}
     networks:
       - mired
-  # ms_stock:
-  #   build:
-  #     context: ../ms-inventarios # Ruta hacia el microservicio
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     FLASK_ENV: development
-  #     DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
-  #     DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
-  #     DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-  #     SQLALCHEMY_ENGINE_OPTIONS: |
-  #       {"connect_args": {"options": "-csearch_path=stock_schema"}}
-  #   networks:
-  #     - mired
+  ms_stock:
+    build:
+      context: ../ms-inventarios # Ruta hacia el microservicio
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+      SQLALCHEMY_ENGINE_OPTIONS: |
+        {"connect_args": {"options": "-csearch_path=stock_schema"}}
+    networks:
+      - mired
 
-  # ms_pago:
-  #   build:
-  #     context: ../ms-pago # Ruta hacia el microservicio
-  #   ports:
-  #     - "5002:5000"
-  #   environment:
-  #     FLASK_ENV: development
-  #     DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
-  #     DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
-  #     DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-  #     SQLALCHEMY_ENGINE_OPTIONS: |
-  #       {"connect_args": {"options": "-csearch_path=pago_schema"}}
-  #   networks:
-  #     - mired
+  ms_pago:
+    build:
+      context: ../ms-pago # Ruta hacia el microservicio
+    ports:
+      - "5002:5000"
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+      SQLALCHEMY_ENGINE_OPTIONS: |
+        {"connect_args": {"options": "-csearch_path=pago_schema"}}
+    networks:
+      - mired
 
-  # ms_compras:
-  #   build:
-  #     context: ../ms-compras # Ruta hacia el microservicio
-  #   ports:
-  #     - "5001:5000"
-  #   environment:
-  #     FLASK_ENV: development
-  #     DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
-  #     DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
-  #     DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-  #     SQLALCHEMY_ENGINE_OPTIONS: |
-  #       {"connect_args": {"options": "-csearch_path=compras_schema"}}
-  #   networks:
-  #     - mired
+  ms_compras:
+    build:
+      context: ../ms-compras # Ruta hacia el microservicio
+    ports:
+      - "5001:5000"
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+      SQLALCHEMY_ENGINE_OPTIONS: |
+        {"connect_args": {"options": "-csearch_path=compras_schema"}}
+    networks:
+      - mired
 
 volumes:
   postgres_data:

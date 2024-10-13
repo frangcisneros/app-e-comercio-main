@@ -6,6 +6,14 @@ import os
 
 
 class StockTestCase(unittest.TestCase):
+    def tearDown(self):
+        response = requests.get("http://localhost:5000/api/v1/stock/get_all")
+        json_data = response.json()
+        for product in json_data:
+            response = requests.delete(
+                f"http://localhost:5000/api/v1/stock/delete_product/{product['product_id']}"
+            )
+
     def test_stock_index(self):
         response = requests.get("http://127.0.0.1:5000/api/v1/stock")
         self.assertEqual(response.status_code, 200)
