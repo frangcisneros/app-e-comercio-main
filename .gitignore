@@ -1,4 +1,10 @@
+
 __pycache__/
 .pytest_cache/
 .vscode/
 venv/
+app/config/__pycache__
+requirements.txt
+test/__pycache__/test_app.cpython-312.pyc
+.gitignore
+test/__pycache__/
