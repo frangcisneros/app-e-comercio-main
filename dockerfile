@@ -21,10 +21,8 @@ RUN ls -la /home/flaskapp/app
 COPY requirements.txt .
 COPY .env .
 
-ENTRYPOINT [ “python” ]
-
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 5000
+EXPOSE 8000
 
-CMD [ "python", "./app.py" ]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:create_app()"]

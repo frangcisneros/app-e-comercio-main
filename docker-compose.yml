@@ -1,4 +1,17 @@
 services:
+  ms_main_app:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+    networks:
+      - mired
+
   db:
     image: postgres:latest
     environment:
