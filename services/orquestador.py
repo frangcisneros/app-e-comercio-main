@@ -9,13 +9,12 @@ def saga_compra(data):
 
     saga_builder.action(
         action=lambda: CompraService.crear_compra(data),
-        compensation=lambda: CompraService.compensar_compra(data["compra_id"])
+        compensation=lambda: CompraService.compensar_compra(data["compra_id"]),
     ).action(
         action=lambda: crear_pago(data),
-        compensation=lambda: compensar_pago(data["pago_id"])
+        compensation=lambda: compensar_pago(data["pago_id"]),
     ).action(
-        action=lambda: inventory_sell(data),
-        compensation=lambda: None
+        action=lambda: inventory_sell(data), compensation=lambda: None
     )
 
     saga = saga_builder.build()
@@ -23,5 +22,5 @@ def saga_compra(data):
         saga.execute()
         return {"status": "Orden creada con éxito"}, 200
     except SagaError as e:
-        print("algo no anda bien")
+        print(f"algo no anda bien {e}")
         return {"status": "Error al crear la orden", "detail": str(e)}, 500

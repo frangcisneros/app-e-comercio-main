@@ -1,7 +1,15 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify, request
 import requests
+from services.orquestador import saga_compra
 
 main_app_bp = Blueprint("main_app", __name__)
+
+
+@main_app_bp.route("/saga/compra", methods=["POST"])
+def saga_compra_endpoint():
+    data = request.get_json()
+    response, status_code = saga_compra(data)
+    return jsonify(response), status_code
 
 
 @main_app_bp.route("/get_product/<int:id>", methods=["GET"])

@@ -12,17 +12,24 @@ RUN useradd --create-home --home-dir /home/flaskapp flaskapp \
 
 WORKDIR /home/flaskapp
 
-USER flaskapp
 RUN mkdir app
 
-COPY ./app ./app
-COPY ./app.py .
-RUN ls -la /home/flaskapp/app
-COPY requirements.txt .
-COPY .env .
+COPY . .
+# COPY ./app ./app
+# COPY ./app.py .
+# RUN ls -la /home/flaskapp/app
+# COPY requirements.txt .
+# COPY .env .
+# COPY gunicorn.sh .
+# COPY gunicorn.conf.py .
+
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
 
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:create_app()"]
+RUN chmod +x ./gunicorn.sh
+
+USER flaskapp
+
+CMD ["bash", "gunicorn.sh"]

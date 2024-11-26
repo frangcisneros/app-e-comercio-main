@@ -22,6 +22,7 @@ class TestSagaCompra(unittest.TestCase):
         }
 
         response, status_code = saga_compra(data)
+        print(response)
 
         self.assertEqual(status_code, 200)
         self.assertEqual(response["status"], "Orden creada con éxito")
