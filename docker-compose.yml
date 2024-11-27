@@ -1,4 +1,12 @@
 services:
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - mired
+
   ms_main_app:
     build:
       context: .
@@ -6,11 +14,17 @@ services:
       - "8000:8000"
     environment:
       FLASK_ENV: production
-      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      MS_CATALOGO_URL: http://ms_catalogo:5000
+      MS_STOCK_URL: http://ms_stock:5000
+      MS_PAGO_URL: http://ms_pago:5000
+      MS_COMPRAS_URL: http://ms_compras:5000
+      REDIS_URL: redis://redis:6379
     networks:
       - mired
 
   db:
+    container_name: db
     image: postgres:latest
     environment:
       POSTGRES_USER: main_app_user
@@ -24,6 +38,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # Montar el archivo de inicialización
   ms_catalogo:
+    container_name: ms_catalogo
     build:
       context: ../microservicio-catalogo # Ruta hacia el microservicio
     ports:
@@ -38,6 +53,7 @@ services:
     networks:
       - mired
   ms_stock:
+    container_name: ms_stock
     build:
       context: ../ms-inventarios # Ruta hacia el microservicio
     ports:
@@ -53,6 +69,7 @@ services:
       - mired
 
   ms_pago:
+    container_name: ms_pago
     build:
       context: ../ms-pago # Ruta hacia el microservicio
     ports:
@@ -68,6 +85,7 @@ services:
       - mired
 
   ms_compras:
+    container_name: ms_compras
     build:
       context: ../ms-compras # Ruta hacia el microservicio
     ports:

@@ -15,13 +15,6 @@ WORKDIR /home/flaskapp
 RUN mkdir app
 
 COPY . .
-# COPY ./app ./app
-# COPY ./app.py .
-# RUN ls -la /home/flaskapp/app
-# COPY requirements.txt .
-# COPY .env .
-# COPY gunicorn.sh .
-# COPY gunicorn.conf.py .
 
 
 RUN pip install --no-cache-dir -r requirements.txt
