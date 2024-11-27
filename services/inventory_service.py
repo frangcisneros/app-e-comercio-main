@@ -1,21 +1,43 @@
+from app import db
+from sqlalchemy import text
 import requests
 import redis
 import logging
 import os
+from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from pathlib import Path
-from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 basedir = os.path.abspath(Path(__file__).parents[2])
 load_dotenv(os.path.join(basedir, ".env"))
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL is None:
+    raise ValueError("DATABASE_URL environment variable is not set")
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
 redis_url = os.getenv("REDIS_URL")
+if redis_url is None:
+    raise ValueError("REDIS_URL environment variable is not set")
 redis_client = redis.StrictRedis.from_url(redis_url)
+
+
+def check_quantity(product_id):
+    session = Session()
+    result = (
+        session.execute(
+            text(
+                "SELECT SUM(CASE WHEN in_out = 'in' THEN quantity ELSE -quantity END) AS balance FROM stock_schema.stock WHERE product_id = :product_id"
+            ),
+            {"product_id": product_id},
+        )
+        .mappings()
+        .fetchone()
+    )
+    session.close()
+    return result["balance"] if result else 0
 
 
 def inventory_sell(data):
@@ -31,22 +53,17 @@ def inventory_sell(data):
         quantity = data["quantity"]
 
         # Verificar la cantidad de inventario disponible
-        result = session.execute(
-            text(
-                "SELECT quantity FROM stock_schema.stock WHERE product_id = :product_id FOR UPDATE"
-            ),
-            {"product_id": product_id},
-        ).fetchone()
+        balance = check_quantity(product_id)
 
-        if result is None or result["quantity"] < quantity:
+        if balance < quantity:
             raise Exception("Inventario insuficiente")
 
-        # Actualizar el inventario
+        # Registrar la salida del inventario
         session.execute(
             text(
-                "UPDATE stock_schema.stock SET quantity = quantity - :quantity WHERE product_id = :product_id"
+                "INSERT INTO stock_schema.stock (product_id, quantity, in_out) VALUES (:product_id, :quantity, 'out')"
             ),
-            {"quantity": quantity, "product_id": product_id},
+            {"product_id": product_id, "quantity": quantity},
         )
 
         session.commit()
