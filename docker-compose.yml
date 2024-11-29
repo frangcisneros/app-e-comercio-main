@@ -50,6 +50,7 @@ services:
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       SQLALCHEMY_ENGINE_OPTIONS: |
         {"connect_args": {"options": "-csearch_path=catalogo_schema"}}
+      REDIS_URL: redis://redis:6379
     networks:
       - mired
   ms_stock:
@@ -65,6 +66,7 @@ services:
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       SQLALCHEMY_ENGINE_OPTIONS: |
         {"connect_args": {"options": "-csearch_path=stock_schema"}}
+      REDIS_URL: redis://redis:6379
     networks:
       - mired
 
@@ -81,6 +83,7 @@ services:
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       SQLALCHEMY_ENGINE_OPTIONS: |
         {"connect_args": {"options": "-csearch_path=pago_schema"}}
+      REDIS_URL: redis://redis:6379
     networks:
       - mired
 
@@ -97,6 +100,11 @@ services:
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       SQLALCHEMY_ENGINE_OPTIONS: |
         {"connect_args": {"options": "-csearch_path=compras_schema"}}
+      REDIS_URL: redis://redis:6379
+      REDIS_HOST: redis
+      REDIS_PORT: '6379'
+      REDIS_DB: '0'
+      REDIS_PASSWORD: ''
     networks:
       - mired
 
