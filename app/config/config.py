@@ -22,22 +22,24 @@ class DevelopmentConfig(Config):
     TESTING = True
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    CACHE_REDIS_URL = os.getenv('REDIS_URL')
+    CACHE_REDIS_URL = os.getenv("REDIS_URL")
+
 
 class TestConfig(Config):
     TESTING = True
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_TEST_URL")
-    CACHE_REDIS_URL = os.getenv('REDIS_URL')
+    CACHE_REDIS_URL = os.getenv("REDIS_URL")
+
 
 class ProductionConfig(Config):
     DEBUG = False
     TESTING = False
     SQLALCHEMY_RECORD_QUERIES = False
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_PROD_URL")
-    CACHE_REDIS_URL = os.getenv('REDIS_URL')
-    
+    CACHE_REDIS_URL = os.getenv("REDIS_URL")
+
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
