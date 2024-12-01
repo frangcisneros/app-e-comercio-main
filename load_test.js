@@ -31,12 +31,10 @@ export default function () {
     });
     check(sellRes, { 'status was 200': (r) => r.status === 200 });
 
-    // Chequear la cantidad de stock cada 10 ventas
-    if (__ITER % 10 === 0) {
-        let checkRes = http.get('http://localhost:5000/api/v1/stock/check_quantity/2');
-        check(checkRes, { 'status was 200': (r) => r.status === 200 });
-        console.log(`Stock quantity after ${__ITER} iterations: ${checkRes.json().quantity}`);
-    }
+    // Chequear la cantidad de stock después de cada venta
+    let checkRes = http.get('http://localhost:5000/api/v1/stock/check_quantity/2');
+    check(checkRes, { 'status was 200': (r) => r.status === 200 });
+    console.log(`Stock quantity after ${__ITER + 1} iterations: ${checkRes.json().quantity}`);
 
     sleep(1);
 }

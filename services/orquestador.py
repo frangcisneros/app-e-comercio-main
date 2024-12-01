@@ -1,19 +1,25 @@
-from saga import Saga, SagaBuilder, SagaError
+from pathlib import Path
+from services.inventory_service import InventoryService
 from services.compra_service import CompraService
 from services.pago_service import crear_pago, compensar_pago
-from services.inventory_service import inventory_sell
-
-
-import os
+from saga import SagaBuilder, SagaError
 from dotenv import load_dotenv
-from pathlib import Path
-
+import os
 
 basedir = os.path.abspath(Path(__file__).parents[2])
 load_dotenv(os.path.join(basedir, ".env"))
 
 
 def saga_compra(data):
+    # Verificar la cantidad de inventario disponible antes de iniciar la saga
+    product_id = data["product_id"]
+    quantity = data["quantity"]
+    available_quantity = InventoryService.check_quantity(product_id)
+
+    if available_quantity < quantity:
+        print("Inventario insuficiente")
+        return {"status": "Error", "detail": "Inventario insuficiente"}, 400
+
     saga_builder = SagaBuilder.create()
 
     saga_builder.action(
@@ -23,7 +29,8 @@ def saga_compra(data):
         action=lambda: crear_pago(data),
         compensation=lambda: compensar_pago(data["pago_id"]),
     ).action(
-        action=lambda: inventory_sell(data), compensation=lambda: None
+        action=lambda: InventoryService.inventory_sell(data),
+        compensation=lambda: InventoryService.compensar_inventory_sell(data),
     )
 
     saga = saga_builder.build()
@@ -32,5 +39,5 @@ def saga_compra(data):
         print("Orden creada con éxito")
         return {"status": "Orden creada con éxito"}, 200
     except SagaError as e:
-        print(f"algo no anda bien {e}")
+        print(f"Error al crear la orden: {e}")
         return {"status": "Error al crear la orden", "detail": str(e)}, 500
