@@ -3,11 +3,12 @@ import { check, sleep } from 'k6';
 
 export let options = {
     stages: [
-        { duration: '1m', target: 60 }, // Simula 60 usuarios concurrentes durante 1 minuto
+        { duration: '1s', target: 60 }, 
     ],
 };
 
 export function setup() {
+
     // Llenar la tabla de stock con 100 unidades de un producto
     let refuelRes = http.post('http://localhost:5000/api/v1/stock/refuel', JSON.stringify({ product_id: 2, quantity: 100 }), {
         headers: { 'Content-Type': 'application/json' },

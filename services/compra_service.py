@@ -3,7 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-
+from tenacity import retry, stop_after_attempt, wait_random
 
 basedir = os.path.abspath(Path(__file__).parents[2])
 load_dotenv(os.path.join(basedir, ".env"))
@@ -11,6 +11,7 @@ load_dotenv(os.path.join(basedir, ".env"))
 
 class CompraService:
 
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(3))
     @staticmethod
     def crear_compra(data):
         r = requests.post(f"{os.getenv("MS_COMPRAS_URL")}/compras/", json=data)
@@ -20,6 +21,7 @@ class CompraService:
             data["compra_id"] = r.json()["id"]
             logging.info(r.json())
 
+    @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(3))
     @staticmethod
     def compensar_compra(compra_id):
         r = requests.delete(f"{os.getenv("MS_COMPRAS_URL")}/compras/{compra_id}")

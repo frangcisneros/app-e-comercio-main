@@ -7,6 +7,7 @@ import os
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from pathlib import Path
+from tenacity import retry, stop_after_attempt, wait_random
 from sqlalchemy.orm import sessionmaker
 
 basedir = os.path.abspath(Path(__file__).parents[2])
@@ -23,7 +24,7 @@ if redis_url is None:
     raise ValueError("REDIS_URL environment variable is not set")
 redis_client = redis.StrictRedis.from_url(redis_url)
 
-
+@retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(3))
 def check_quantity(product_id):
     session = Session()
     result = (
@@ -39,7 +40,7 @@ def check_quantity(product_id):
     session.close()
     return result["balance"] if result else 0
 
-
+@retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(3))
 def inventory_sell(data):
     product_id = data["product_id"]
     lock_key = f"lock:product:{product_id}"
@@ -80,7 +81,7 @@ def inventory_sell(data):
         lock.release()
         session.close()
 
-
+@retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(3))
 def compensar_inventory_sell(data):
     r = requests.post(f"{os.getenv("MS_STOCK_URL")}/api/v1/stock/refuel", json=data)
     if r.status_code != 200:
