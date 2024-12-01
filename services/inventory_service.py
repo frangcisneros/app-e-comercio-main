@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 basedir = os.path.abspath(Path(__file__).parents[2])
 load_dotenv(os.path.join(basedir, ".env"))
 
-DATABASE_URL = os.getenv("DATABASE_PROD_URL")
+DATABASE_URL = os.getenv("DATABASE_DEV_URL")
 if DATABASE_URL is None:
     raise ValueError("DATABASE_URL environment variable is not set")
 engine = create_engine(DATABASE_URL)

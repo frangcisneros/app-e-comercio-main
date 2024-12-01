@@ -11,7 +11,6 @@ class Config(object):
     TESTING = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
 
     @staticmethod
     def init_app(app):
@@ -22,6 +21,7 @@ class DevelopmentConfig(Config):
     TESTING = True
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_DEV_URL")
     CACHE_REDIS_URL = os.getenv("REDIS_URL")
 
 
@@ -39,10 +39,6 @@ class ProductionConfig(Config):
     SQLALCHEMY_RECORD_QUERIES = False
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_PROD_URL")
     CACHE_REDIS_URL = os.getenv("REDIS_URL")
-
-    @classmethod
-    def init_app(cls, app):
-        Config.init_app(app)
 
 
 def factory(app):
