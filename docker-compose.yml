@@ -14,7 +14,9 @@ services:
       - "8000:8000"
     environment:
       FLASK_ENV: production
-      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       MS_CATALOGO_URL: http://ms_catalogo:5000
       MS_STOCK_URL: http://ms_stock:5000
       MS_PAGO_URL: http://ms_pago:5000
@@ -45,7 +47,7 @@ services:
       - "5003:5000"
     environment:
       FLASK_ENV: development
-      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
       DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       SQLALCHEMY_ENGINE_OPTIONS: |
@@ -61,7 +63,7 @@ services:
       - "5000:5000"
     environment:
       FLASK_ENV: development
-      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
       DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       SQLALCHEMY_ENGINE_OPTIONS: |
@@ -78,7 +80,7 @@ services:
       - "5002:5000"
     environment:
       FLASK_ENV: development
-      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
       DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       SQLALCHEMY_ENGINE_OPTIONS: |
@@ -95,7 +97,7 @@ services:
       - "5001:5000"
     environment:
       FLASK_ENV: development
-      DATABASE_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_db
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
       DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
       SQLALCHEMY_ENGINE_OPTIONS: |
