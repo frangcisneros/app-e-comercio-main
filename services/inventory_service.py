@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from tenacity import retry, stop_after_attempt, wait_random
-from sqlalchemy.orm import sessionmaker
 import redis
 
 basedir = os.path.abspath(Path(__file__).parents[2])
@@ -25,6 +24,8 @@ class InventoryService:
         )
         if response.status_code != 200:
             raise Exception("Error al verificar la cantidad de inventario")
+        elif response.status_code == 409:
+            raise Exception("Stock insuficiente")
         return response.json()["quantity"]
 
     @staticmethod
