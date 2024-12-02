@@ -44,7 +44,9 @@ class InventoryService:
             balance = InventoryService.check_quantity(product_id)
             logging.info(f"Cantidad de inventario antes de la venta: {balance}")
 
+            # si el inventario es insuficiente, lanzar una excepción y un error 409
             if balance < quantity:
+                logging.error("Inventario insuficiente")
                 raise Exception("Inventario insuficiente")
 
             # Registrar la salida del inventario en el microservicio de stock
@@ -72,17 +74,3 @@ class InventoryService:
     @retry(wait=wait_random(min=1, max=2), stop=stop_after_attempt(3))
     def compensar_inventory_sell(data):
         pass
-        # try:
-        #     response = requests.post(
-        #         f"{os.getenv('MS_STOCK_URL')}/api/v1/stock/refuel", json=data
-        #     )
-        #     if response.status_code != 200:
-        #         raise Exception("Error al compensar la venta del producto")
-
-        #     response_json = response.json()
-        #     logging.info(
-        #         f"Respuesta del microservicio de stock al compensar: {response_json}"
-        #     )
-        # except Exception as e:
-        #     logging.error(f"Error al compensar la venta del producto: {e}")
-        #     raise
