@@ -18,7 +18,7 @@ ip_address = get_ip_address("eth0")
 bind = f"{ip_address}:8000"
 workers = multiprocessing.cpu_count() * 2 + 1
 
-timeout = 2
+timeout = 30
 preload = True
 
 loglevel = "info"
