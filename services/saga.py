@@ -11,15 +11,6 @@ load_dotenv(os.path.join(basedir, ".env"))
 
 
 def saga_compra(data):
-    # Verificar la cantidad de inventario disponible antes de iniciar la saga
-    product_id = data["product_id"]
-    quantity = data["quantity"]
-    available_quantity = InventoryService.check_quantity(product_id)
-
-    if available_quantity < quantity:
-        print("Inventario insuficiente")
-        return {"status": "Error", "detail": "Inventario insuficiente"}, 400
-
     saga_builder = SagaBuilder.create()
 
     saga_builder.action(

@@ -3,16 +3,23 @@ import requests
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-from tenacity import retry, stop_after_attempt, wait_random
+from tenacity import retry
+from tenacity.stop import stop_after_attempt
+from tenacity.wait import wait_random
 import redis
 
 basedir = os.path.abspath(Path(__file__).parents[2])
 load_dotenv(os.path.join(basedir, ".env"))
 
-redis_url = os.getenv("REDIS_URL")
-if redis_url is None:
-    raise ValueError("REDIS_URL environment variable is not set")
-redis_client = redis.StrictRedis.from_url(redis_url)
+
+if os.getenv("FLASK_ENV") == "development":
+    MS_STOCK_URL = os.getenv("MS_STOCK_URL")
+    REDIS_URL = os.getenv("REDIS_URL")
+elif os.getenv("FLASK_ENV") == "testing":
+    MS_STOCK_URL = os.getenv("MS_STOCK_TEST_URL")
+    REDIS_URL = os.getenv("REDIS_TEST_URL")
+
+redis_client = redis.StrictRedis.from_url(REDIS_URL)
 
 
 class InventoryService:
@@ -20,7 +27,7 @@ class InventoryService:
     @staticmethod
     def check_quantity(product_id):
         response = requests.get(
-            f"{os.getenv('MS_STOCK_URL')}/api/v1/stock/check_quantity/{product_id}"
+            f"{MS_STOCK_URL}/api/v1/stock/check_quantity/{product_id}"
         )
         if response.status_code != 200:
             raise Exception("Error al verificar la cantidad de inventario")
@@ -51,9 +58,7 @@ class InventoryService:
                 raise Exception("Inventario insuficiente")
 
             # Registrar la salida del inventario en el microservicio de stock
-            response = requests.post(
-                f"{os.getenv('MS_STOCK_URL')}/api/v1/stock/sell", json=data
-            )
+            response = requests.post(f"{MS_STOCK_URL}/api/v1/stock/sell", json=data)
             if response.status_code != 200:
                 raise Exception("Error al vender el producto")
 
