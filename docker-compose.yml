@@ -1,17 +1,30 @@
 services:
-  redis:
-    container_name: redis
-    image: redis:latest
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      - --api.insecure=true # Habilita el panel de control de Traefik (no usar en producción)
+      - --providers.docker=true
+      - --entrypoints.web.address=:80
     ports:
-      - "6379:6379"
+      - 80:80      # HTTP
+      - 8080:8080  # Panel de control de Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.http.middlewares.ms_main_app_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
+      - "traefik.http.middlewares.ms_catalogo_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
+      - "traefik.http.middlewares.ms_stock_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
+      - "traefik.http.middlewares.ms_pago_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
+      - "traefik.http.middlewares.ms_compras_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
     networks:
       - mired
 
   ms_main_app:
     build:
       context: .
-    ports:
-      - "8000:8000"
+    deploy:
+      replicas: 2
     environment:
       FLASK_ENV: production
       DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
@@ -22,9 +35,113 @@ services:
       MS_PAGO_URL: http://ms_pago:5000
       MS_COMPRAS_URL: http://ms_compras:5000
       REDIS_URL: redis://redis:6379
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ms_main_app.rule=Host(`ms_main_app.localhost`)"
+      - "traefik.http.services.ms_main_app.loadbalancer.server.port=8000"
+      - "traefik.http.routers.ms_main_app.entrypoints=web"
+      - "traefik.http.routers.ms_main_app.middlewares=ms_main_app_circuitbreaker"    
     networks:
       - mired
 
+  ms_catalogo:
+    build:
+      context: ../microservicio-catalogo # Ruta hacia el microservicio
+    deploy:
+      replicas: 2
+    environment:
+      FLASK_ENV: development
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+      SQLALCHEMY_ENGINE_OPTIONS: |
+        {"connect_args": {"options": "-csearch_path=catalogo_schema"}}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ms_catalogo.rule=Host(`ms_catalogo.localhost`)"
+      - "traefik.http.routers.ms_catalogo.entrypoints=web"
+      - "traefik.http.services.ms_catalogo.loadbalancer.server.port=5000"
+      - "traefik.http.routers.ms_catalogo.middlewares=ms_catalogo_circuitbreaker"
+    networks:
+      - mired
+  
+  ms_stock:
+    build:
+      context: ../ms-inventarios # Ruta hacia el microservicio
+    deploy:
+      replicas: 2
+    environment:
+      FLASK_ENV: development
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+      SQLALCHEMY_ENGINE_OPTIONS: |
+        {"connect_args": {"options": "-csearch_path=stock_schema"}}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ms_stock.rule=Host(`ms_stock.localhost`)"
+      - "traefik.http.services.ms_stock.loadbalancer.server.port=5000"
+      - "traefik.http.routers.ms_stock.entrypoints=web"
+      - "traefik.http.routers.ms_stock.middlewares=ms_stock_circuitbreaker"
+    networks:
+      - mired
+
+  ms_pago:
+    build:
+      context: ../ms-pago # Ruta hacia el microservicio
+    deploy:
+      replicas: 2
+    environment:
+      FLASK_ENV: development
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+      SQLALCHEMY_ENGINE_OPTIONS: |
+        {"connect_args": {"options": "-csearch_path=pago_schema"}}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ms_pago.rule=Host(`ms_pago.localhost`)"
+      - "traefik.http.services.ms_pago.loadbalancer.server.port=5000"
+      - "traefik.http.routers.ms_pago.entrypoints=web"
+      - "traefik.http.routers.ms_pago.middlewares=ms_pago_circuitbreaker"
+    networks:
+      - mired
+
+  ms_compras:
+    build:
+      context: ../ms-compras # Ruta hacia el microservicio
+    deploy:
+      replicas: 2
+    environment:
+      FLASK_ENV: development
+      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
+      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
+      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
+      SQLALCHEMY_ENGINE_OPTIONS: |
+        {"connect_args": {"options": "-csearch_path=compras_schema"}}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ms_compras.rule=Host(`ms_compras.localhost`)"
+      - "traefik.http.services.ms_compras.loadbalancer.server.port=5000"
+      - "traefik.http.routers.ms_compras.entrypoints=web"
+      - "traefik.http.routers.ms_compras.middlewares=ms_compras_circuitbreaker"
+  
+    networks:
+      - mired
   db:
     container_name: db
     image: postgres:latest
@@ -39,77 +156,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql # Montar el archivo de inicialización
-  ms_catalogo:
-    container_name: ms_catalogo
-    build:
-      context: ../microservicio-catalogo # Ruta hacia el microservicio
+  redis:
+    container_name: redis
+    image: redis:latest
     ports:
-      - "5003:5000"
-    environment:
-      FLASK_ENV: development
-      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
-      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
-      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-      SQLALCHEMY_ENGINE_OPTIONS: |
-        {"connect_args": {"options": "-csearch_path=catalogo_schema"}}
-      REDIS_URL: redis://redis:6379
+      - "6379:6379"
     networks:
       - mired
-  ms_stock:
-    container_name: ms_stock
-    build:
-      context: ../ms-inventarios # Ruta hacia el microservicio
-    ports:
-      - "5000:5000"
-    environment:
-      FLASK_ENV: development
-      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
-      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
-      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-      SQLALCHEMY_ENGINE_OPTIONS: |
-        {"connect_args": {"options": "-csearch_path=stock_schema"}}
-      REDIS_URL: redis://redis:6379
-    networks:
-      - mired
-
-  ms_pago:
-    container_name: ms_pago
-    build:
-      context: ../ms-pago # Ruta hacia el microservicio
-    ports:
-      - "5002:5000"
-    environment:
-      FLASK_ENV: development
-      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
-      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
-      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-      SQLALCHEMY_ENGINE_OPTIONS: |
-        {"connect_args": {"options": "-csearch_path=pago_schema"}}
-      REDIS_URL: redis://redis:6379
-    networks:
-      - mired
-
-  ms_compras:
-    container_name: ms_compras
-    build:
-      context: ../ms-compras # Ruta hacia el microservicio
-    ports:
-      - "5001:5000"
-    environment:
-      FLASK_ENV: development
-      DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
-      DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
-      DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-      SQLALCHEMY_ENGINE_OPTIONS: |
-        {"connect_args": {"options": "-csearch_path=compras_schema"}}
-      REDIS_URL: redis://redis:6379
-      REDIS_HOST: redis
-      REDIS_PORT: '6379'
-      REDIS_DB: '0'
-      REDIS_PASSWORD: ''
-    networks:
-      - mired
-
 volumes:
   postgres_data:
 

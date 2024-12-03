@@ -1,4 +1,4 @@
-services=("ms_compras" "ms_stock" "ms_catalogo" "ms_pago")
+services=("app-e-comercio-main-ms_compras-1" "app-e-comercio-main-ms_stock-1" "app-e-comercio-main-ms_catalogo-1" "app-e-comercio-main-ms_pago-1")
 databases=("main_app_dev_db" "main_app_test_db" "main_app_prod_db")
 
 for service in "${services[@]}"
