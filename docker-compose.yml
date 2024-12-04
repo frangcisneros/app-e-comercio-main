@@ -1,30 +1,30 @@
 services:
   traefik:
-    image: traefik:v3.0
+    image: traefik:v3.1.5
     container_name: traefik
-    command:
-      - --api.insecure=true # Habilita el panel de control de Traefik (no usar en producción)
-      - --providers.docker=true
-      - --entrypoints.web.address=:80
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     ports:
-      - 80:80      # HTTP
-      - 8080:8080  # Panel de control de Traefik
+      - 80:80
+      - 443:443
+      - 6379:6379
+      - 5432:5432
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    labels:
-      - "traefik.http.middlewares.ms_main_app_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
-      - "traefik.http.middlewares.ms_catalogo_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
-      - "traefik.http.middlewares.ms_stock_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
-      - "traefik.http.middlewares.ms_pago_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
-      - "traefik.http.middlewares.ms_compras_circuitbreaker.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/config.yml:/etc/traefik/config.yml:ro
+      - ./certs:/etc/certs:ro
     networks:
       - mired
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik=true"
+
 
   ms_main_app:
     build:
       context: .
-    deploy:
-      replicas: 2
     environment:
       FLASK_ENV: production
       DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
@@ -39,10 +39,12 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ms_main_app.rule=Host(`ms_main_app.localhost`)"
+      - "traefik.http.routers.ms_main_app.rule=Host(`ecommerce.universidad.localhost`)"
+      - "traefik.http.routers.ms_main_app.entrypoints=http,https"
+      - "traefik.http.routers.ms_main_app.tls=true"
+      - "traefik.http.routers.ms_main_app.middlewares=latency-check@file"
       - "traefik.http.services.ms_main_app.loadbalancer.server.port=8000"
-      - "traefik.http.routers.ms_main_app.entrypoints=web"
-      - "traefik.http.routers.ms_main_app.middlewares=ms_main_app_circuitbreaker"    
+      - "traefik.docker.network=mired"
     networks:
       - mired
 
@@ -63,10 +65,10 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ms_catalogo.rule=Host(`ms_catalogo.localhost`)"
-      - "traefik.http.routers.ms_catalogo.entrypoints=web"
-      - "traefik.http.services.ms_catalogo.loadbalancer.server.port=5000"
-      - "traefik.http.routers.ms_catalogo.middlewares=ms_catalogo_circuitbreaker"
+      - "traefik.http.routers.ms_catalogo.tls=true"
+      - "traefik.http.routers.ms_catalogo.middlewares=latency-check@file"
+      - "traefik.http.services.ms_catalogo.loadbalancer.server.port=8000"
+      - "traefik.docker.network=mired"
     networks:
       - mired
   
@@ -87,10 +89,10 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ms_stock.rule=Host(`ms_stock.localhost`)"
-      - "traefik.http.services.ms_stock.loadbalancer.server.port=5000"
-      - "traefik.http.routers.ms_stock.entrypoints=web"
-      - "traefik.http.routers.ms_stock.middlewares=ms_stock_circuitbreaker"
+      - "traefik.http.routers.ms_stock.tls=true"
+      - "traefik.http.routers.ms_stock.middlewares=latency-check@file"
+      - "traefik.http.services.ms_stock.loadbalancer.server.port=8000"
+      - "traefik.docker.network=mired"
     networks:
       - mired
 
@@ -111,10 +113,10 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ms_pago.rule=Host(`ms_pago.localhost`)"
-      - "traefik.http.services.ms_pago.loadbalancer.server.port=5000"
-      - "traefik.http.routers.ms_pago.entrypoints=web"
-      - "traefik.http.routers.ms_pago.middlewares=ms_pago_circuitbreaker"
+      - "traefik.http.routers.ms_pago.tls=true"
+      - "traefik.http.routers.ms_pago.middlewares=latency-check@file"
+      - "traefik.http.services.ms_pago.loadbalancer.server.port=8000"
+      - "traefik.docker.network=mired"
     networks:
       - mired
 
@@ -135,10 +137,10 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ms_compras.rule=Host(`ms_compras.localhost`)"
-      - "traefik.http.services.ms_compras.loadbalancer.server.port=5000"
-      - "traefik.http.routers.ms_compras.entrypoints=web"
-      - "traefik.http.routers.ms_compras.middlewares=ms_compras_circuitbreaker"
+      - "traefik.http.routers.ms_compras.tls=true"
+      - "traefik.http.routers.ms_compras.middlewares=latency-check@file"
+      - "traefik.http.services.ms_compras.loadbalancer.server.port=8000"
+      - "traefik.docker.network=mired"
   
     networks:
       - mired
@@ -149,8 +151,6 @@ services:
       POSTGRES_USER: main_app_user
       POSTGRES_PASSWORD: main_app_password
       POSTGRES_DB: main_app_db
-    ports:
-      - "5433:5432"
     networks:
       - mired
     volumes:
@@ -159,8 +159,6 @@ services:
   redis:
     container_name: redis
     image: redis:latest
-    ports:
-      - "6379:6379"
     networks:
       - mired
 volumes:
@@ -169,4 +167,5 @@ volumes:
 
 networks:
   mired:
-    driver: bridge
+    driver: bridge  
+    external: true

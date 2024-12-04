@@ -5,6 +5,11 @@ from services.orquestador import saga_compra
 main_app_bp = Blueprint("main_app", __name__)
 
 
+@main_app_bp.route("/", methods=["GET"])
+def hola_mundo():
+    return jsonify({"message": "Hola Mundo!"})
+
+
 @main_app_bp.route("/saga/compra", methods=["POST"])
 def saga_compra_endpoint():
     data = request.get_json()

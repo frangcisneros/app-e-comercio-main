@@ -1,3 +1,6 @@
+global:
+  sendAnonymousUsage: true
+
 api:
   dashboard: true
   insecure: true
@@ -8,11 +11,25 @@ providers:
     watch: true
     exposedByDefault: false
 
-entryPoints:
-  http:
-    address: :80
-  traefik:
-    address: :8080
+  file:
+    filename: /etc/traefik/config.yml
+    watch: true
 
-volumes:
-  - ./acme.json:/acme.json
+log:
+  level: INFO
+  format: common
+
+entryPoints:
+  redis:
+    address: ":6379"
+  postgresql:
+    address: ":5432"
+  http:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: https
+          scheme: https
+  https:
+    address: ":443"

@@ -1,0 +1,32 @@
+http:
+  middlewares:
+    latency-check:
+      circuitBreaker:
+        expression: "LatencyAtQuantileMS(50.0)>100"
+  routers:
+    traefik:
+      rule: "Host(`traefik.universidad.localhost`)"
+      service: "api@internal"
+      tls:
+        domains:
+          - main: "universidad.localhost"
+            sans:
+              - "*.universidad.localhost"
+          - main: "universidad.local"
+            sans:
+              - "*.universidad.local"
+    ms_main_app:
+      rule: "Host(`ecommerce.universidad.localhost`)"
+      service: "ms_main_app"
+      tls: true
+      middlewares:
+        - latency-check
+  services:
+    ms_main_app:
+      loadBalancer:
+        servers:
+          - url: "http://ecommerce:8000"
+tls:
+  certificates:
+    - certFile: "/etc/certs/cert.pem"
+      keyFile: "/etc/certs/key.pem"
