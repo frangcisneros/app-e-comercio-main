@@ -3,21 +3,24 @@ import requests
 
 
 class MainAppResourceTestCase(unittest.TestCase):
+    BASE_URL = "http://localhost:5002/api/v1/pago"
+
     def tearDown(self):
-        response = requests.get("http://localhost:5002/api/v1/pago/todos")
+        self.delete_all_pagos()
+
+    def delete_all_pagos(self):
+        response = requests.get(f"{self.BASE_URL}/todos")
         json_data = response.json()
         for product in json_data:
-            response = requests.delete(
-                f"http://localhost:5002/api/v1/pago/eliminar/{product['id']}"
-            )
+            requests.delete(f"{self.BASE_URL}/eliminar/{product['id']}")
 
     def test_ms_pago(self):
-        response = requests.get("http://localhost:5002/api/v1/pago")
+        response = requests.get(self.BASE_URL)
         self.assertEqual(response.status_code, 200)
 
     def test_ms_pago_crear(self):
         response = requests.post(
-            "http://localhost:5002/api/v1/pago",
+            self.BASE_URL,
             json={"producto_id": 1, "precio": 100.0, "medio_pago": "tarjeta"},
         )
         self.assertEqual(response.status_code, 201)
@@ -25,7 +28,7 @@ class MainAppResourceTestCase(unittest.TestCase):
 
     def test_crear_pago(self):
         response = requests.post(
-            "http://localhost:5002/api/v1/pago",
+            self.BASE_URL,
             json={"producto_id": 1, "precio": 100.0, "medio_pago": "tarjeta"},
         )
         self.assertEqual(response.status_code, 201)

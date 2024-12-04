@@ -23,6 +23,7 @@ EXPOSE 8000
 
 RUN chmod +x ./gunicorn.sh
 
+
 USER flaskapp
 
 CMD ["bash", "gunicorn.sh"]
