@@ -38,7 +38,6 @@ class TestComprasRoutes(unittest.TestCase):
         self.assertEqual(json_data["producto_id"], 1)
         self.assertEqual(json_data["direccion_envio"], "Calle Falsa 123")
 
-    # TODO: NO FUNCIONA PORQUE GUARDA EN CACHE
     def test_get_compras(self):
         data = {"producto_id": 1, "direccion_envio": "Calle Falsa 123"}
         requests.post(

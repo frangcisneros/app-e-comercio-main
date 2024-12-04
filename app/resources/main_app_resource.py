@@ -4,8 +4,6 @@ from services.saga import saga_compra
 
 main_app_bp = Blueprint("main_app", __name__)
 
-# TODO: pasarle las rutas a traves de env, mejor hacerlo cuando ponga los ms en gunicorn que voy a poder acceder a traves de rutas normales
-
 
 @main_app_bp.route("/saga/compra", methods=["POST"])
 def saga_compra_endpoint():
