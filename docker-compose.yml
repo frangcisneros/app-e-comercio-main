@@ -1,26 +1,23 @@
 services:
   traefik:
-    image: traefik:v3.1.5
-    container_name: traefik
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    ports:
-      - 80:80
-      - 443:443
-      - 6379:6379
-      - 5432:5432
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/config.yml:/etc/traefik/config.yml:ro
-      - ./certs:/etc/certs:ro
-    networks:
-      - mired
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik=true"
-
+        image: traefik:v2.11
+        container_name: traefik-microservicios
+        restart: unless-stopped
+        security_opt:
+            - no-new-privileges:true
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - ./config/traefik.yml:/etc/traefik/traefik.yml:ro
+            - ./config/config.yml:/etc/traefik/config.yml:ro
+            - ./certs:/etc/certs:ro
+        networks:
+            - mired
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.traefik=true"
 
   ms_main_app:
     build:
@@ -40,11 +37,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ms_main_app.rule=Host(`ecommerce.universidad.localhost`)"
-      - "traefik.http.routers.ms_main_app.entrypoints=http,https"
       - "traefik.http.routers.ms_main_app.tls=true"
-      - "traefik.http.routers.ms_main_app.middlewares=latency-check@file"
-      - "traefik.http.services.ms_main_app.loadbalancer.server.port=8000"
+      - "traefik.http.services.ms_main_app.loadbalancer.server.port=5000"
       - "traefik.docker.network=mired"
+      - "traefik.http.middlewares.ms_main_app.circuitbreaker.expression=LatencyAtQuantileMs(50.0) > 100"
+      - "traefik.http.middlewares.ms_main_app.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600)>0.25"
+      - "traefik.http.middlewares.ms_main_app.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
     networks:
       - mired
 
@@ -65,10 +63,13 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.ms_catalogo.rule=Host(`catalogo.universidad.localhost`)"
       - "traefik.http.routers.ms_catalogo.tls=true"
-      - "traefik.http.routers.ms_catalogo.middlewares=latency-check@file"
-      - "traefik.http.services.ms_catalogo.loadbalancer.server.port=8000"
+      - "traefik.http.services.ms_catalogo.loadbalancer.server.port=5000"
       - "traefik.docker.network=mired"
+      - "traefik.http.middlewares.ms_catalogo.circuitbreaker.expression=LatencyAtQuantileMs(50.0) > 100"
+      - "traefik.http.middlewares.ms_catalogo.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600)>0.25"
+      - "traefik.http.middlewares.ms_catalogo.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
     networks:
       - mired
   
@@ -89,10 +90,13 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.ms_stock.rule=Host(`stock.universidad.localhost`)"
       - "traefik.http.routers.ms_stock.tls=true"
-      - "traefik.http.routers.ms_stock.middlewares=latency-check@file"
-      - "traefik.http.services.ms_stock.loadbalancer.server.port=8000"
+      - "traefik.http.services.ms_stock.loadbalancer.server.port=5000"
       - "traefik.docker.network=mired"
+      - "traefik.http.middlewares.ms_stock.circuitbreaker.expression=LatencyAtQuantileMs(50.0) > 100"
+      - "traefik.http.middlewares.ms_stock.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600)>0.25"
+      - "traefik.http.middlewares.ms_stock.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
     networks:
       - mired
 
@@ -113,10 +117,13 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.ms_pago.rule=Host(`pago.universidad.localhost`)"
       - "traefik.http.routers.ms_pago.tls=true"
-      - "traefik.http.routers.ms_pago.middlewares=latency-check@file"
-      - "traefik.http.services.ms_pago.loadbalancer.server.port=8000"
+      - "traefik.http.services.ms_pago.loadbalancer.server.port=5000"
       - "traefik.docker.network=mired"
+      - "traefik.http.middlewares.ms_pago.circuitbreaker.expression=LatencyAtQuantileMs(50.0) > 100"
+      - "traefik.http.middlewares.ms_pago.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600)>0.25"
+      - "traefik.http.middlewares.ms_pago.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
     networks:
       - mired
 
@@ -136,11 +143,15 @@ services:
     depends_on:
       - traefik
     labels:
+      
       - "traefik.enable=true"
+      - "traefik.http.routers.ms_compras.rule=Host(`compras.universidad.localhost`)"
       - "traefik.http.routers.ms_compras.tls=true"
-      - "traefik.http.routers.ms_compras.middlewares=latency-check@file"
-      - "traefik.http.services.ms_compras.loadbalancer.server.port=8000"
+      - "traefik.http.services.ms_compras.loadbalancer.server.port=5000"
       - "traefik.docker.network=mired"
+      - "traefik.http.middlewares.ms_compras.circuitbreaker.expression=LatencyAtQuantileMs(50.0) > 100"
+      - "traefik.http.middlewares.ms_compras.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600)>0.25"
+      - "traefik.http.middlewares.ms_compras.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
   
     networks:
       - mired

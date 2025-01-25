@@ -3,27 +3,25 @@ global:
 
 api:
   dashboard: true
-  insecure: true
+  insecure: true 
 
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     watch: true
-    exposedByDefault: false
+    exposedByDefault: false # expone los contenedores por default. Si es false -> muestra solo aquellos que tienen en sus labels "traefik.enable=true"
 
+  # Configuración por archivo
   file:
     filename: /etc/traefik/config.yml
-    watch: true
+    watch: true # para que traefik detecte cambios en el archivo de configuración
+
 
 log:
   level: INFO
   format: common
 
 entryPoints:
-  redis:
-    address: ":6379"
-  postgresql:
-    address: ":5432"
   http:
     address: ":80"
     http:

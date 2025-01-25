@@ -2,14 +2,14 @@ import http from "k6/http";
 import { check, sleep } from "k6";
 
 export let options = {
-	stages: [{ duration: "3m", target: 60 }],
+	stages: [{ duration: "1m", target: 3 }],
 };
 
 export function setup() {
 	// Llenar la tabla de stock con 100 unidades de un producto
 	let refuelRes = http.post(
-		"http://ms_stock.localhost/api/v1/stock/refuel",
-		JSON.stringify({ product_id: 2, quantity: 1000 }),
+		"http://stock.universidad.localhost/api/v1/stock/refuel",
+		JSON.stringify({ product_id: 2, quantity: 1 }),
 		{
 			headers: { "Content-Type": "application/json" },
 		}
@@ -29,7 +29,7 @@ export default function () {
 	};
 
 	let sellRes = http.post(
-		"http://ms_main_app.localhost/api/v1/saga/compra",
+		"http://ecommerce.universidad.localhost/api/v1/saga/compra",
 		JSON.stringify(data),
 		{
 			headers: { "Content-Type": "application/json" },
@@ -39,7 +39,7 @@ export default function () {
 
 	// Chequear la cantidad de stock después de cada venta
 	let checkRes = http.get(
-		"http://ms_stock.localhost/api/v1/stock/check_quantity/2"
+		"http://stock.universidad.localhost/api/v1/stock/check_quantity/2"
 	);
 	check(checkRes, { "status was 200": (r) => r.status === 200 });
 	console.log(
@@ -51,12 +51,12 @@ export default function () {
 
 export function teardown() {
 	// Eliminar todos los productos del stock
-	let getAllRes = http.get("http://ms_stock.localhost/api/v1/stock/get_all");
+	let getAllRes = http.get("http://stock.universidad.localhost/api/v1/stock/get_all");
 	check(getAllRes, { "status was 200": (r) => r.status === 200 });
 	let products = getAllRes.json();
 	products.forEach((product) => {
 		let deleteRes = http.del(
-			`http://ms_stock.localhost/api/v1/stock/delete_product/${product.product_id}`
+			`http://stock.universidad.localhost/api/v1/stock/delete_product/${product.product_id}`
 		);
 		check(deleteRes, { "status was 200": (r) => r.status === 200 });
 	});

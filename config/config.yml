@@ -1,8 +1,5 @@
+# proveedor http
 http:
-  middlewares:
-    latency-check:
-      circuitBreaker:
-        expression: "LatencyAtQuantileMS(50.0)>100"
   routers:
     traefik:
       rule: "Host(`traefik.universidad.localhost`)"
@@ -15,17 +12,8 @@ http:
           - main: "universidad.local"
             sans:
               - "*.universidad.local"
-    ms_main_app:
-      rule: "Host(`ecommerce.universidad.localhost`)"
-      service: "ms_main_app"
-      tls: true
-      middlewares:
-        - latency-check
-  services:
-    ms_main_app:
-      loadBalancer:
-        servers:
-          - url: "http://ecommerce:8000"
+
+# para conexiones con certificado tls (https)
 tls:
   certificates:
     - certFile: "/etc/certs/cert.pem"
