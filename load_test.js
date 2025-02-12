@@ -1,15 +1,23 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
-export let options = {
-	stages: [{ duration: "1m", target: 3 }],
+export const options = {
+	stages: [
+		{ duration: '1s', target: 60 }, 
+		{ duration: '3m', target: 60 }, 
+	],
+	hosts: {
+		'ecommerce.universidad.localhost': '127.0.0.1',
+		'stock.universidad.localhost': '127.0.0.1'
+	},
+	insecureSkipTLSVerify: true,
 };
 
 export function setup() {
 	// Llenar la tabla de stock con 100 unidades de un producto
 	let refuelRes = http.post(
 		"http://stock.universidad.localhost/api/v1/stock/refuel",
-		JSON.stringify({ product_id: 2, quantity: 1 }),
+		JSON.stringify({ product_id: 2, quantity: 100 }),
 		{
 			headers: { "Content-Type": "application/json" },
 		}
