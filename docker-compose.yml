@@ -1,23 +1,23 @@
 services:
   traefik:
-        image: traefik:v2.11
-        container_name: traefik-microservicios
-        restart: unless-stopped
-        security_opt:
-            - no-new-privileges:true
-        ports:
-            - 80:80
-            - 443:443
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-            - ./config/traefik.yml:/etc/traefik/traefik.yml:ro
-            - ./config/config.yml:/etc/traefik/config.yml:ro
-            - ./certs:/etc/certs:ro
-        networks:
-            - mired
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.traefik=true"
+    image: traefik:v2.11
+    container_name: traefik-microservicios
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./config/config.yml:/etc/traefik/config.yml:ro
+      - ./certs:/etc/certs:ro
+    networks:
+      - mired
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik=true"
 
   ms_main_app:
     build:
@@ -27,10 +27,10 @@ services:
       DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
       DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-      MS_CATALOGO_URL: http://ms_catalogo:5000
-      MS_STOCK_URL: http://ms_stock:5000
-      MS_PAGO_URL: http://ms_pago:5000
-      MS_COMPRAS_URL: http://ms_compras:5000
+      MS_CATALOGO_URL: http://catalogo.universidad.localhost
+      MS_STOCK_URL: http://stock.universidad.localhost
+      MS_PAGO_URL: http://pago.universidad.localhost
+      MS_COMPRAS_URL: http://compras.universidad.localhost
       REDIS_URL: redis://redis:6379
     depends_on:
       - traefik
@@ -38,7 +38,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.ms_main_app.rule=Host(`ecommerce.universidad.localhost`)"
       - "traefik.http.routers.ms_main_app.tls=true"
-      - "traefik.http.services.ms_main_app.loadbalancer.server.port=5000"
+      - "traefik.http.services.ms_main_app.loadbalancer.server.port=8000"
       - "traefik.docker.network=mired"
       - "traefik.http.middlewares.ms_main_app.circuitbreaker.expression=LatencyAtQuantileMs(50.0) > 100"
       - "traefik.http.middlewares.ms_main_app.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600)>0.25"
@@ -72,7 +72,7 @@ services:
       - "traefik.http.middlewares.ms_catalogo.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
     networks:
       - mired
-  
+
   ms_stock:
     build:
       context: ../ms-inventarios # Ruta hacia el microservicio
@@ -143,7 +143,7 @@ services:
     depends_on:
       - traefik
     labels:
-      
+
       - "traefik.enable=true"
       - "traefik.http.routers.ms_compras.rule=Host(`compras.universidad.localhost`)"
       - "traefik.http.routers.ms_compras.tls=true"
@@ -152,7 +152,7 @@ services:
       - "traefik.http.middlewares.ms_compras.circuitbreaker.expression=LatencyAtQuantileMs(50.0) > 100"
       - "traefik.http.middlewares.ms_compras.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600)>0.25"
       - "traefik.http.middlewares.ms_compras.circuitbreaker.expression=NetworkErrorRatio() > 0.5"
-  
+
     networks:
       - mired
   db:
@@ -178,5 +178,5 @@ volumes:
 
 networks:
   mired:
-    driver: bridge  
+    driver: bridge
     external: true

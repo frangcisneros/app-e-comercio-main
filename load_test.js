@@ -3,12 +3,12 @@ import { check, sleep } from "k6";
 
 export const options = {
 	stages: [
-		{ duration: '1s', target: 60 }, 
-		{ duration: '3m', target: 60 }, 
+		{ duration: "1s", target: 60 },
+		{ duration: "3m", target: 60 },
 	],
 	hosts: {
-		'ecommerce.universidad.localhost': '127.0.0.1',
-		'stock.universidad.localhost': '127.0.0.1'
+		"ecommerce.universidad.localhost": "127.0.0.1",
+		"stock.universidad.localhost": "127.0.0.1",
 	},
 	insecureSkipTLSVerify: true,
 };
@@ -28,6 +28,7 @@ export function setup() {
 export default function () {
 	// Realizar la solicitud de venta utilizando saga_compra
 	let data = {
+		compra_id: 1,
 		producto_id: 2,
 		product_id: 2,
 		direccion_envio: "Calle Falsa 123",
@@ -44,12 +45,15 @@ export default function () {
 		}
 	);
 	check(sellRes, { "status was 200": (r) => r.status === 200 });
+	// mostrar que devuelve esa url
+	console.log(sellRes.body);
 
 	// Chequear la cantidad de stock después de cada venta
 	let checkRes = http.get(
 		"http://stock.universidad.localhost/api/v1/stock/check_quantity/2"
 	);
 	check(checkRes, { "status was 200": (r) => r.status === 200 });
+	// mostrar que devuelve esa url
 	console.log(
 		`Stock quantity after ${__ITER + 1} iterations: ${checkRes.json().quantity}`
 	);
@@ -59,7 +63,9 @@ export default function () {
 
 export function teardown() {
 	// Eliminar todos los productos del stock
-	let getAllRes = http.get("http://stock.universidad.localhost/api/v1/stock/get_all");
+	let getAllRes = http.get(
+		"http://stock.universidad.localhost/api/v1/stock/get_all"
+	);
 	check(getAllRes, { "status was 200": (r) => r.status === 200 });
 	let products = getAllRes.json();
 	products.forEach((product) => {
