@@ -27,10 +27,10 @@ services:
       DATABASE_DEV_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_dev_db
       DATABASE_TEST_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_test_db
       DATABASE_PROD_URL: postgresql+psycopg2://main_app_user:main_app_password@db:5432/main_app_prod_db
-      MS_CATALOGO_URL: http://catalogo.universidad.localhost
-      MS_STOCK_URL: http://stock.universidad.localhost
-      MS_PAGO_URL: http://pago.universidad.localhost
-      MS_COMPRAS_URL: http://compras.universidad.localhost
+      MS_CATALOGO_URL:  http://ms_catalogo:5000
+      MS_STOCK_URL: http://ms_stock:5000
+      MS_PAGO_URL: http://ms_pago:5000
+      MS_COMPRAS_URL: http://ms_compras:5000
       REDIS_URL: redis://redis:6379
     depends_on:
       - traefik
