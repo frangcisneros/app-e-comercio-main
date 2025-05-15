@@ -1,3 +1,5 @@
+Owners: Francisco Cisneros y Marcelo Sola Bru
+
 # Eliminar cache docker
 docker system prune -a -f
 
